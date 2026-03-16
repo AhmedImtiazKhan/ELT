@@ -1,6 +1,8 @@
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from psycopg2.extras import RealDictCursor
 
+table = "yt_api"
+
 
 def get_conn_cursor():
     hook = PostgresHook(postgres_conn_id="postgres_db_yt_elt", database="elt_db")
@@ -27,11 +29,11 @@ def create_schema(schema):
 
 def create_table(schema):
 
-    conn, cur = get_conn_cursor()
+    cur, conn = get_conn_cursor()
 
     if schema == 'staging':
         table_sql = f"""
-            CREATE TABLE IF NOT EXISTS {staging}.{table}(
+            CREATE TABLE IF NOT EXISTS {schema}.{table}(
                 "Video_ID" VARCHAR(11) PRIMARY KEY NOT NULL,
                 "Video_Title" TEXT NOT NULL,
                 "Upload _Date" TIMESTAMP NOT NULL,
@@ -54,7 +56,7 @@ def create_table(schema):
             );
         """
 
-    curr.execute(table_sql)
+    cur.execute(table_sql)
 
     conn.commit()
 
@@ -63,7 +65,7 @@ def create_table(schema):
 
 def get_video_ids(cur,schema):
 
-    cur.execute(f"""SELECT Video_ID FROM {scehma}.{table};""")
+    cur.execute(f"""SELECT Video_ID FROM {schema}.{table};""")
     ids = cur.fetchall()
 
     video_ids = [row['Video_ID'] for row in ids]
